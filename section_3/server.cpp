@@ -160,11 +160,14 @@ void closeClient(int clientSocket, fd_set *openSockets, int *maxfds)
 
 void sendToClient(int clientSocket, const char *message)
 {   
+    // Send the size of the message
     uint32_t messageSize = htonl(strlen(message));
     if (send(clientSocket, &messageSize, sizeof(long),0) < 0)
     {
         perror("Error sending message to client\n");
     }
+
+    // Send the message
     if (send(clientSocket, message, strlen(message), 0) < 0)
     {
         perror("Error sending message to client\n");
@@ -172,10 +175,10 @@ void sendToClient(int clientSocket, const char *message)
 }
 
 void makeCommandStr(const char *command, std::string *commandOutput) {
-    FILE* fp = popen(command, "r");
+    FILE* fp = popen(command, "r"); // Open pipe
     char buffer[1024];
     while (fgets(buffer, 1024, fp)) {
-        *commandOutput += buffer;
+        *commandOutput += buffer; // Add output of command to string
     }
     fclose(fp);
 }
@@ -183,7 +186,7 @@ void makeCommandStr(const char *command, std::string *commandOutput) {
 
 void createCommandStrFromVector(std::vector<std::string> *tokens, std::string *commandString) {
     for (std::string word : *tokens) {
-        *commandString += word + " ";
+        *commandString += word + " "; // Concat tokens into a string
     }
 }
 
@@ -215,6 +218,7 @@ void clientCommand(int clientSocket, fd_set *openSockets, int *maxfds,
     }
     else
     {
+      // Make and send the command output
       makeCommandStr(commandString.c_str(), &commandOutput);
       sendToClient(clientSocket, commandOutput.c_str());
     }
